@@ -1,6 +1,6 @@
 # Your Project
 
-Summarize your project in one or two sentences
+This project integrates FEMA's National Risk Index database, NASA'S GPM IMERG global precipitation database, and a Homeland Infrastructure Foundation-Level Data hospital database. Users can identify hospitals in areas of high riverine or coastal flooding risk, explore the average monthy precipitation at their locations, and identify nearby hospitals offering similar services.
 
 ## Data
 
