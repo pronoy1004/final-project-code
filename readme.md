@@ -4,7 +4,7 @@ This project integrates FEMA's National Risk Index database, NASA'S GPM IMERG gl
 
 ## Data
 
-FEMA National Risk Index Dataset: https://hazards.fema.gov/nri/data-resources#csvDownload. Download .csv using 'All Counties - County-level detail (Table)' under 'County Level'.
+FEMA National Risk Index Dataset: https://hazards.fema.gov/nri/data-resources#csvDownload. Download .csv using 'All Counties - County-level detail (Table)' under 'County Level'. The National Risk Index (NRI) is a score from 0 - 100 calculated from the expected occurrence of a given natural hazard, social vulnerability, and community resilience. The NRI is calculated for 18 types of natural hazards for every county in the US. A composite risk index encompassing the risk of all naturals hazards is also given for each county. This project considers riverine flooding, coastal flooding, and composite risk index.
 
 NASA GPM IMERG Precipitation Dataset (non-relational database): https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGM_06/summary. Select 'Subset / Get Data' on right. In the pop-up, select Download Method: Get Original Files, Refine Date Range: Can use any, our code was tested with data from 2015 - 2020, File Format: HDF5. Click 'Get Data'. In the pop-up, either follow instructions in 'Instructions for downloading' link (requires creating user account and using wget) or download files in list individually by right-clicking and saving.
 
