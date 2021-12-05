@@ -1,12 +1,14 @@
-# Your Project
+# Project
 
-This project integrates FEMA's National Risk Index database, NASA'S GPM IMERG global precipitation database, and a Homeland Infrastructure Foundation-Level Data hospital database. Users can identify hospitals in areas of high riverine or coastal flooding risk, explore the average monthy precipitation at their locations, and identify nearby hospitals offering similar services.
+This project integrates FEMA's National Risk Index database, NASA'S GPM IMERG global precipitation database, and a Homeland Infrastructure hospital database. Users can identify hospitals in areas of high riverine or coastal flooding risk, explore the average monthy precipitation at their locations, and identify nearby hospitals offering similar services.
 
 ## Data
 
-List specific URLs where your data can be retrieved. 
+FEMA National Risk Index: https://hazards.fema.gov/nri/data-resources#csvDownload. Download .csv using 'All Counties - County-level detail (Table)' under 'County Level'.
 
-Anticipate it being downloaded to the `data` directory
+Homeland Infrastructure Hospital Data: https://hifld-geoplatform.opendata.arcgis.com/datasets/6ac5e325468c4cb9b905f1728d6fbf0f_0/explore?location=6.916414%2C-15.457895%2C2.00&showTable=true. Click cloud-shaped 'Download' button, select 'Download' in 'CSV' box on left.
+
+NASA GPM IMERG Precipitation Data: https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGM_06/summary. Select 'Subset / Get Data' on right. In pop-up, Download Method: Get Original Files. Refine Date Range: Can use any, our code was tested with data from 2015 - 2020. File Format: HDF5. Click 'Get Data'. In the pop-up, either follow instructions in 'Instructions for downloading' link (requires creating user account and using wget) or download files in list individually by right-clicking and saving.
 
 ## Build
 
