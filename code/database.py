@@ -5,6 +5,7 @@ import psycopg2.extras
 import h5py
 from datetime import datetime
 import numpy as np
+from tabulate import tabulate
 
 
 connection_string = "dbname='hospital' user='hospital' password='hospital'"
@@ -51,8 +52,8 @@ class ApplicationQueries():
 
     def query1(self):
         try:
-            rfld_thresh = float(input("Enter the River flooding risk Threshold : "))
-            cfld_thresh = float(input("Enter the Coastal flooding risk Threshold : "))
+            rfld_thresh = float(input("Enter the River flooding risk Threshold (0 - 100): "))
+            cfld_thresh = float(input("Enter the Coastal flooding risk Threshold (0 - 100): "))
 
         except ValueError:
             print("Incorrect Input!")
@@ -63,7 +64,10 @@ class ApplicationQueries():
             = hosp_general_info.id JOIN nri_risk ON countyfips = stcofips WHERE rfldrisks >= %s OR cfldrisks >= %s""")
             cursor.execute(query, (rfld_thresh, cfld_thresh))
             records = cursor.fetchall()
-            return records
+            headers = ['ID', 'Name', 'River Flood Score', 'River Flood Rating', 'Coastal Flood Score', 'Coastal Flood Rating']
+            table = [[records[i][0], records[i][1], round(float(records[i][2]),2), records[i][3], round(float(records[i][4]),2), records[i][5]] for i in range(0, len(records))]
+            print(tabulate(table, headers))
+            #return records
 
 
         except Exception as e:
@@ -76,8 +80,8 @@ class ApplicationQueries():
 
     def query2(self):
         try:
-            rfld_thresh = float(input("Enter the River flooding risk Threshold : "))
-            cfld_thresh = float(input("Enter the Coastal flooding risk Threshold : "))
+            rfld_thresh = float(input("Enter the River flooding risk Threshold (0 - 100): "))
+            cfld_thresh = float(input("Enter the Coastal flooding risk Threshold (0 - 100): "))
 
         except ValueError:
             print("Incorrect Input!")
@@ -112,7 +116,17 @@ class ApplicationQueries():
                 new_row = list(records[k])
                 new_row.append(monthly_avg)
                 records_list.append(new_row)
-            return records_list   
+            headers = ['ID', 'Name', 'River Flood Score', 'River Flood Rating', 'Coastal Flood Score', 'Coastal Flood Rating', 'Latitude', 'Longitude', 'Precip Jan',
+                   'Precip Feb', 'Precip Mar', 'Precip Apr', 'Precip May', 'Precip Jun', 'Precip Jul', 'Precip Aug', 'Precip Sep', 'Precip Oct', 'Precip Nov',
+                   'Precip Dec']
+            table = [[records_list[i][0], records_list[i][1], round(float(records_list[i][2]),2), records_list[i][3], round(float(records_list[i][4]),2),
+                  records_list[i][5], round(float(records_list[i][6]),2), round(float(records_list[i][7]),2), round(float(records_list[i][8][0]),2),
+                  round(float(records_list[i][8][1]),2), round(float(records_list[i][8][2]),2), round(float(records_list[i][8][3]),2),
+                  round(float(records_list[i][8][4]),2), round(float(records_list[i][8][5]),2), round(float(records_list[i][8][6]),2),
+                  round(float(records_list[i][8][7]),2), round(float(records_list[i][8][8]),2), round(float(records_list[i][8][9]),2),
+                  round(float(records_list[i][8][10]),2), round(float(records_list[i][8][11]),2)] for i in range(0, len(records_list))]
+            print(tabulate(table, headers))
+            #return records_list   
 
         except Exception as e:
             print("Error : ")
@@ -127,8 +141,8 @@ class ApplicationQueries():
     def query3(self, rfld_high, rfld_low, mile_radius):
 
         try:
-            rfld_high = float(input("Enter the upper limit : "))
-            rfld_low = float(input("Enter the lower limit : "))
+            rfld_high = float(input("Enter the upper limit (0 - 100): "))
+            rfld_low = float(input("Enter the lower limit (0 - 100): "))
             mile_radius = float(input("Enter the Radius in which you want to search : "))
 
 
@@ -150,7 +164,10 @@ class ApplicationQueries():
                     ORDER BY c1.rfldrisks DESC, c1.id, c2.rfldrisks;""")
             cursor.execute(query, (rfld_high, rfld_low, lat_range, lon_range))
             records = cursor.fetchall()
-            return records  
+            headers = ['ID', 'ID', 'NAICS Description', 'State', 'River Flood Score', 'River Flood Score']
+            table = [[records[i][0], records[i][1], records[i][2], records[i][3], round(float(records[i][4]),2), round(float(records[i][5]),2)] for i in range(0, len(records))]
+            print(tabulate(table, headers))
+            #return records  
 
         except Exception as e:
             print("Error : ")
@@ -163,7 +180,7 @@ class ApplicationQueries():
     def query4(self):
 
         try:
-            risk_thresh = float(input("Enter the risk threshold : "))
+            risk_thresh = float(input("Enter the risk threshold (0 - 100): "))
         except ValueError:
             print("Incorrect Input!")
         try:
@@ -175,7 +192,10 @@ class ApplicationQueries():
                 ORDER BY at_risk_population DESC;""")
             cursor.execute(query, (risk_thresh,))
             records = cursor.fetchall()
-            return records 
+            headers = ['State', 'At-risk Population']
+            table = [[records[i][0], records[i][1]] for i in range(0, len(records))]
+            print(tabulate(table, headers))
+            #return records 
 
         except Exception as e:
             print("Error : ")
@@ -189,7 +209,7 @@ class ApplicationQueries():
 
         
         try:
-            risk_thresh = float(input("Enter the risk threshold : "))
+            risk_thresh = float(input("Enter the risk threshold (0 - 100): "))
             pop_thresh = float(input("Enter the population threshold : "))
         except ValueError:
             print("Incorrect Input!")
@@ -208,6 +228,9 @@ class ApplicationQueries():
                 ORDER BY population DESC;""")
             cursor.execute(query, (risk_thresh, pop_thresh))
             records = cursor.fetchall()
+            headers = ['County FIPS', 'Population', 'Total Risk', 'Number of Hospitals']
+            table = [[records[i][0], records[i][1], round(float(records[i][2]),2), records[i][3]] for i in range(0, len(records))]
+            print(tabulate(table, headers))
             return records
 
         except Exception as e:
