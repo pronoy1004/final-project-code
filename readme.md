@@ -6,13 +6,27 @@ This project integrates FEMA's National Risk Index database, NASA'S GPM IMERG gl
 
 FEMA National Risk Index Dataset: https://hazards.fema.gov/nri/data-resources#csvDownload. Download .csv using 'All Counties - County-level detail (Table)' under 'County Level'.
 
-NASA GPM IMERG Precipitation Dataset: https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGM_06/summary. Select 'Subset / Get Data' on right. In the pop-up, select Download Method: Get Original Files, Refine Date Range: Can use any, our code was tested with data from 2015 - 2020, File Format: HDF5. Click 'Get Data'. In the pop-up, either follow instructions in 'Instructions for downloading' link (requires creating user account and using wget) or download files in list individually by right-clicking and saving.
+NASA GPM IMERG Precipitation Dataset (non-relational database): https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGM_06/summary. Select 'Subset / Get Data' on right. In the pop-up, select Download Method: Get Original Files, Refine Date Range: Can use any, our code was tested with data from 2015 - 2020, File Format: HDF5. Click 'Get Data'. In the pop-up, either follow instructions in 'Instructions for downloading' link (requires creating user account and using wget) or download files in list individually by right-clicking and saving.
 
 Homeland Infrastructure Foundation-Level Data Hospital Dataset: https://hifld-geoplatform.opendata.arcgis.com/datasets/6ac5e325468c4cb9b905f1728d6fbf0f_0/explore?location=6.916414%2C-15.457895%2C2.00&showTable=true. Click cloud-shaped 'Download' button, select 'Download' in 'CSV' box on left.
 
 ## Build
 
-1. Create 'hospital' database and user in Postgres: As user 'Postgres', run 
+1. Create 'hospital' database and user in Postgres: As user 'Postgres', run 'setup.sql. Table schemas will be created later in Python.
+```
+psql -U postgres postgres < setup.sql
+```
+2. Install Python dependencies
+```
+pip install os
+pip install psycopg2
+pip install h5py
+pip install datetime
+pip install numpy
+pip install tabulate
+```
+
+4. 
 
 List the steps needed to build your application from the terminal. That should include the step needed to install dependencies (including your non-relational datastore).
 
