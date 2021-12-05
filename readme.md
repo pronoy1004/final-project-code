@@ -12,11 +12,11 @@ Homeland Infrastructure Foundation-Level Data Hospital Dataset: https://hifld-ge
 
 ## Build
 
-1. Create 'hospital' database and user in Postgres: As user 'Postgres', run 'setup.sql. Table schemas will be created later in Python.
+1. Create 'hospital' database and user in Postgres. Table schemas will be created later in Python.
 ```
 psql -U postgres postgres < setup.sql
 ```
-2. Install Python dependencies
+2. Install Python dependencies.
 ```
 pip install os
 pip install psycopg2
@@ -26,20 +26,9 @@ pip install numpy
 pip install tabulate
 ```
 
-4. 
-
 List the steps needed to build your application from the terminal. That should include the step needed to install dependencies (including your non-relational datastore).
 
 You should also include the step needed to set up the database and configure your schema. Assume a clean Postgres install.
-
-Example:
-
-```
-psql -U postgres postgres < setup.sql
-psql -U myAppAdmin appDatabase < schema.sql
-
-pip install
-```
 
 ## Run
 
