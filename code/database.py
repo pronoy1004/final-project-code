@@ -1,7 +1,6 @@
 import os
 from os import walk
 import psycopg2
-import psycopg2.extras
 import h5py
 from datetime import datetime
 import numpy as np
@@ -68,7 +67,7 @@ class ApplicationQueries():
             table = [[records[i][0], records[i][1], round(float(records[i][2]),2), records[i][3], round(float(records[i][4]),2), records[i][5]] for i in range(0, len(records))]
             print(tabulate(table, headers))
             #return records
-
+            query_1_insert(rfld_thresh, cfld_thresh)
 
         except Exception as e:
             print("Error : ")
@@ -126,7 +125,8 @@ class ApplicationQueries():
                   round(float(records_list[i][8][7]),2), round(float(records_list[i][8][8]),2), round(float(records_list[i][8][9]),2),
                   round(float(records_list[i][8][10]),2), round(float(records_list[i][8][11]),2)] for i in range(0, len(records_list))]
             print(tabulate(table, headers))
-            #return records_list   
+            #return records_list
+            query_2_insert(rfld_thresh, cfld_thresh)
 
         except Exception as e:
             print("Error : ")
@@ -167,7 +167,8 @@ class ApplicationQueries():
             headers = ['ID', 'ID', 'NAICS Description', 'State', 'River Flood Score', 'River Flood Score']
             table = [[records[i][0], records[i][1], records[i][2], records[i][3], round(float(records[i][4]),2), round(float(records[i][5]),2)] for i in range(0, len(records))]
             print(tabulate(table, headers))
-            #return records  
+            #return records
+            query_3_insert(rfld_high, rfld_low, mile_radius)
 
         except Exception as e:
             print("Error : ")
@@ -195,7 +196,8 @@ class ApplicationQueries():
             headers = ['State', 'At-risk Population']
             table = [[records[i][0], records[i][1]] for i in range(0, len(records))]
             print(tabulate(table, headers))
-            #return records 
+            #return records
+            query_4_insert(risk_thresh)
 
         except Exception as e:
             print("Error : ")
@@ -231,12 +233,68 @@ class ApplicationQueries():
             headers = ['County FIPS', 'Population', 'Total Risk', 'Number of Hospitals']
             table = [[records[i][0], records[i][1], round(float(records[i][2]),2), records[i][3]] for i in range(0, len(records))]
             print(tabulate(table, headers))
-            return records
+            #return records
+            query_5_insert(risk_thresh, pop_thresh)
 
         except Exception as e:
             print("Error : ")
             print(str(e))
             return
+
+    def query_1_insert(rfld_thresh, cfld_thresh):
+        cursor = conn.cursor()
+        dsn_param = conn.get_dsn_parameters()
+        query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 'private', login_count))
+        conn.commit()
+        param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
+        query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 1, "hosp_address_info, hosp_general_info, nri_risk", param_string, login_count))
+        conn.commit()
+    
+    def query_2_insert(rfld_thresh, cfld_thresh):
+        cursor = conn.cursor()
+        dsn_param = conn.get_dsn_parameters()
+        query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 'private', login_count))
+        conn.commit()
+        param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
+        query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 2, "hosp_address_info, hosp_general_info, nri_risk, precip", param_string, login_count))
+        conn.commit()
+    
+    def query_3_insert(rfld_high, rfld_low, mile_radius):
+        cursor = conn.cursor()
+        dsn_param = conn.get_dsn_parameters()
+        query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 'private', login_count))
+        conn.commit()
+        param_string = str(rfld_high) + ", " + str(rfld_low) + ", " + str(mile_radius)
+        query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 3, "hosp_address_info, hosp_general_info, nri_risk", param_string, login_count))
+        conn.commit()
+    
+    def query_4_insert(risk_thresh):
+        cursor = conn.cursor()
+        dsn_param = conn.get_dsn_parameters()
+        query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 'private', login_count))
+        conn.commit()
+        param_string = str(risk_thresh)
+        query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 4, "nri_risk, nri_demographics, nri_county", param_string, login_count))
+        conn.commit()
+        
+    def query_5_insert(risk_thresh, pop_thresh):
+        cursor = conn.cursor()
+        dsn_param = conn.get_dsn_parameters()
+        query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 'private', login_count))
+        conn.commit()
+        param_string = str(risk_thresh) + ", " + str(pop_thresh)
+        query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
+        cursor.execute(query, (dsn_param['user'], 5, "hospital_address_info, nri_risk, nri_demographics", param_string, login_count))
+        conn.commit()
 
 
     
