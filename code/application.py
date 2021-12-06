@@ -20,14 +20,14 @@ if __name__ == "__main__":
 
             if(log == 'n'):
                 break
-            elif(log == "1"):
+            elif(log == 1):
                 y = query.login()
                 if(y == 1):
                     run_app()
                 elif(y == 0):
                     print("Incorrect User Name")
 
-            elif(log == "2"):
+            elif(log == 2):
                 query.register()
                 if(y == 1):
                     logreg()
@@ -62,19 +62,19 @@ if __name__ == "__main__":
             inp = input()
             if(inp == 'n'):
                 break
-            elif(inp == "1"):
+            elif(inp == 1):
                 query.query1()
 
-            elif(inp == "2"):
+            elif(inp == 2):
                 query.query2()
 
-            elif(inp == "3"):
+            elif(inp == 3):
                 query.query3()
 
-            elif(inp == "4"):
+            elif(inp == 4):
                 query.query4()
 
-            elif(inp == "5"):
+            elif(inp == 5):
                 query.query5()
 
             else:
