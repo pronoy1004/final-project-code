@@ -1,7 +1,7 @@
-from database import ApplicationQueries
+import database
 
 if __name__ == "__main__":
-    query = ApplicationQueries()
+    query = database.ApplicationQueries()
 
     #### Login/Register ####
 

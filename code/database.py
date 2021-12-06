@@ -1,5 +1,5 @@
 import os
-from os import PRIO_PGRP, error, walk
+from os import walk
 import psycopg2
 import psycopg2.extras
 import h5py
@@ -10,57 +10,59 @@ from tabulate import tabulate
 connection_string = "dbname='hospital' user='hospital' password='hospital'"
 conn = psycopg2.connect(connection_string)
 
+### get number of logins ###
+cursor = conn.cursor()
+dsn_param = conn.get_dsn_parameters()
+query = ("""SELECT * FROM user_data WHERE user_name = %s""")
+cursor.execute(query, (dsn_param['user'],))
+records = cursor.fetchall()
+if len(records) == 0:
+    login_count = 1
+elif len(records) == 1:
+    login_count = records[0][2] + 1
+    
+hdf5_path = "C:\\Users\\Elly Breves\\Desktop\\Elly\\RPI\\Courses\\ITWS-6250\\Final Project\\data\\gpm"
 
+
+
+def read_hdf5(filename):
+    f = h5py.File(filename, "r")
+    timestamp = datetime.utcfromtimestamp(f['Grid']['time'][(0)])
+    year = timestamp.year
+    month = timestamp.month
+    lat = f['Grid']['lat'][()] # 1800 x 1 array
+    lon = f['Grid']['lon'][()] # 3600 x 1 array
+    precip = f['Grid']['precipitation'][(0,...)] # 3600 x 1800 array
+    f.close()
+    return year, month, lat, lon, precip
+
+### builds a dictionary with hdf5 filenames, year, month, lat, lon
+def build_hdf5_index(hdf5_path):
+    file_list = {}
+    (_, _, hdf5_filenames) = next(walk(hdf5_path))
+    for i in range(len(hdf5_filenames)):
+        print("Working on file " + str(i+1) + " of " + str(len(hdf5_filenames)) + " ...")
+        [year, month, lat_array, lon_array, _] = read_hdf5(hdf5_path + "\\" + hdf5_filenames[i])
+        file_list[i]={}
+        file_list[i]['filename'] = hdf5_filenames[i]
+        file_list[i]['year'] = year
+        file_list[i]['month'] = month
+        file_list[i]['lat'] = lat_array
+        file_list[i]['lon'] = lon_array
+    return file_list
+
+file_list = build_hdf5_index(hdf5_path)
 
 class ApplicationQueries():
 
-    def __init__(self,connection_string):
-        self.conn = psycopg2.connect(connection_string)    
+    def __init__(self):
+        self.conn = psycopg2.connect(user = "hospital",
+                                password = "hospital",
+                                host = "127.0.0.1",
+                                port = "5432",
+                                database = "hospital")
 
-    ### get number of logins ###
-    cursor = conn.cursor()
-    dsn_param = conn.get_dsn_parameters()
-    query = ("""SELECT * FROM user_data WHERE user_name = %s""")
-    cursor.execute(query, (dsn_param['user'],))
-    records = cursor.fetchall()
-    if len(records) == 0:
-        login_count = 1
-    elif len(records) == 1:
-        login_count = records[0][2] + 1
-        
-    hdf5_path = "C:\\Users\\Elly Breves\\Desktop\\Elly\\RPI\\Courses\\ITWS-6250\\Final Project\\data\\gpm"
-
-  
-
-    def read_hdf5(filename):
-        f = h5py.File(filename, "r")
-        timestamp = datetime.utcfromtimestamp(f['Grid']['time'][(0)])
-        year = timestamp.year
-        month = timestamp.month
-        lat = f['Grid']['lat'][()] # 1800 x 1 array
-        lon = f['Grid']['lon'][()] # 3600 x 1 array
-        precip = f['Grid']['precipitation'][(0,...)] # 3600 x 1800 array
-        f.close()
-        return year, month, lat, lon, precip
-
-    ### builds a dictionary with hdf5 filenames, year, month, lat, lon
-    def build_hdf5_index(hdf5_path):
-        file_list = {}
-        (_, _, hdf5_filenames) = next(walk(hdf5_path))
-        for i in range(len(hdf5_filenames)):
-            print("Working on file " + str(i+1) + " of " + str(len(hdf5_filenames)) + " ...")
-            [year, month, lat_array, lon_array, _] = ApplicationQueries.read_hdf5(hdf5_path + "\\" + hdf5_filenames[i])
-            file_list[i]={}
-            file_list[i]['filename'] = hdf5_filenames[i]
-            file_list[i]['year'] = year
-            file_list[i]['month'] = month
-            file_list[i]['lat'] = lat_array
-            file_list[i]['lon'] = lon_array
-        return file_list
-
-    file_list = build_hdf5_index(hdf5_path)
-        
-    
+            
     def login(self):
         try:
 
