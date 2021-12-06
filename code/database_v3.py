@@ -10,51 +10,54 @@ from tabulate import tabulate
 connection_string = "dbname='hospital' user='hospital' password='hospital'"
 conn = psycopg2.connect(connection_string)
 
-### get number of logins ###
-cursor = conn.cursor()
-dsn_param = conn.get_dsn_parameters()
-query = ("""SELECT * FROM user_data WHERE user_name = %s""")
-cursor.execute(query, (dsn_param['user'],))
-records = cursor.fetchall()
-if len(records) == 0:
-    login_count = 1
-elif len(records) == 1:
-    login_count = records[0][2] + 1
-    
-hdf5_path = "C:\\Users\\Elly Breves\\Desktop\\Elly\\RPI\\Courses\\ITWS-6250\\Final Project\\data\\gpm"
 
-def __init__(connection_string):
-    conn = psycopg2.connect(connection_string)    
-
-def read_hdf5(filename):
-    f = h5py.File(filename, "r")
-    timestamp = datetime.utcfromtimestamp(f['Grid']['time'][(0)])
-    year = timestamp.year
-    month = timestamp.month
-    lat = f['Grid']['lat'][()] # 1800 x 1 array
-    lon = f['Grid']['lon'][()] # 3600 x 1 array
-    precip = f['Grid']['precipitation'][(0,...)] # 3600 x 1800 array
-    f.close()
-    return year, month, lat, lon, precip
-
-### builds a dictionary with hdf5 filenames, year, month, lat, lon
-def build_hdf5_index(hdf5_path):
-    file_list = {}
-    (_, _, hdf5_filenames) = next(walk(hdf5_path))
-    for i in range(len(hdf5_filenames)):
-        print("Working on file " + str(i+1) + " of " + str(len(hdf5_filenames)) + " ...")
-        [year, month, lat_array, lon_array, _] = read_hdf5(hdf5_path + "\\" + hdf5_filenames[i])
-        file_list[i]={}
-        file_list[i]['filename'] = hdf5_filenames[i]
-        file_list[i]['year'] = year
-        file_list[i]['month'] = month
-        file_list[i]['lat'] = lat_array
-        file_list[i]['lon'] = lon_array
-    return file_list
-
-file_list = build_hdf5_index(hdf5_path)
 
 class ApplicationQueries():
+
+    ### get number of logins ###
+    cursor = conn.cursor()
+    dsn_param = conn.get_dsn_parameters()
+    query = ("""SELECT * FROM user_data WHERE user_name = %s""")
+    cursor.execute(query, (dsn_param['user'],))
+    records = cursor.fetchall()
+    if len(records) == 0:
+        login_count = 1
+    elif len(records) == 1:
+        login_count = records[0][2] + 1
+        
+    hdf5_path = "C:\\Users\\Elly Breves\\Desktop\\Elly\\RPI\\Courses\\ITWS-6250\\Final Project\\data\\gpm"
+
+    def __init__(connection_string):
+        conn = psycopg2.connect(connection_string)    
+
+    def read_hdf5(filename):
+        f = h5py.File(filename, "r")
+        timestamp = datetime.utcfromtimestamp(f['Grid']['time'][(0)])
+        year = timestamp.year
+        month = timestamp.month
+        lat = f['Grid']['lat'][()] # 1800 x 1 array
+        lon = f['Grid']['lon'][()] # 3600 x 1 array
+        precip = f['Grid']['precipitation'][(0,...)] # 3600 x 1800 array
+        f.close()
+        return year, month, lat, lon, precip
+
+    ### builds a dictionary with hdf5 filenames, year, month, lat, lon
+    def build_hdf5_index(hdf5_path):
+        file_list = {}
+        (_, _, hdf5_filenames) = next(walk(hdf5_path))
+        for i in range(len(hdf5_filenames)):
+            print("Working on file " + str(i+1) + " of " + str(len(hdf5_filenames)) + " ...")
+            [year, month, lat_array, lon_array, _] = ApplicationQueries.read_hdf5(hdf5_path + "\\" + hdf5_filenames[i])
+            file_list[i]={}
+            file_list[i]['filename'] = hdf5_filenames[i]
+            file_list[i]['year'] = year
+            file_list[i]['month'] = month
+            file_list[i]['lat'] = lat_array
+            file_list[i]['lon'] = lon_array
+        return file_list
+
+    file_list = build_hdf5_index(hdf5_path)
+        
     
     def login(self):
         try:
@@ -90,7 +93,7 @@ class ApplicationQueries():
             else:
                 cursor = conn.cursor()
                 query = ("""INSERT INTO user_data(user_name,login_count) VALUES (%s,%s);""")
-                cursor.execute(query, (user_name,login_count))
+                cursor.execute(query, (user_name,ApplicationQueries.login_count))
                 return 1
 
 
@@ -135,11 +138,11 @@ class ApplicationQueries():
             cursor = conn.cursor()
             dsn_param = conn.get_dsn_parameters()
             query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 'private', login_count))
+            cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
             conn.commit()
             param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 1, "hosp_address_info, hosp_general_info, nri_risk", param_string, login_count))
+            cursor.execute(query, (dsn_param['user'], 1, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count))
             conn.commit()
 
         except Exception as e:
@@ -170,15 +173,15 @@ class ApplicationQueries():
                 monthly_precip = {}
                 latitude = float(records[k][6])
                 longitude = float(records[k][7])
-                for i in range(len(file_list)):
-                    lat_idx = np.searchsorted(file_list[i]['lat'], latitude, side="left")
-                    lon_idx = np.searchsorted(file_list[i]['lon'], longitude, side="left")
-                    f = h5py.File(hdf5_path + "\\" + file_list[i]['filename'], "r")
+                for i in range(len(ApplicationQueries.file_list)):
+                    lat_idx = np.searchsorted(ApplicationQueries.file_list[i]['lat'], latitude, side="left")
+                    lon_idx = np.searchsorted(ApplicationQueries.file_list[i]['lon'], longitude, side="left")
+                    f = h5py.File(ApplicationQueries.hdf5_path + "\\" + ApplicationQueries.file_list[i]['filename'], "r")
                     precip = f['Grid']['precipitation'][(0,lon_idx,lat_idx)] # 3600 x 1800 array
                     f.close()
-                    if file_list[i]['year'] not in monthly_precip:
-                        monthly_precip[file_list[i]['year']] = {}
-                    monthly_precip[file_list[i]['year']][file_list[i]['month']] = precip
+                    if ApplicationQueries.file_list[i]['year'] not in monthly_precip:
+                        monthly_precip[ApplicationQueries.file_list[i]['year']] = {}
+                    monthly_precip[ApplicationQueries.file_list[i]['year']][ApplicationQueries.file_list[i]['month']] = precip
                 monthly_avg = []
                 for i in range(12):
                     monthly_data = []
@@ -213,11 +216,11 @@ class ApplicationQueries():
             cursor = conn.cursor()
             dsn_param = conn.get_dsn_parameters()
             query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 'private', login_count))
+            cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
             conn.commit()
             param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 2, "hosp_address_info, hosp_general_info, nri_risk, precip", param_string, login_count))
+            cursor.execute(query, (dsn_param['user'], 2, "hosp_address_info, hosp_general_info, nri_risk, precip", param_string, ApplicationQueries.login_count))
             conn.commit()
 
         except Exception as e:
@@ -273,11 +276,11 @@ class ApplicationQueries():
             cursor = conn.cursor()
             dsn_param = conn.get_dsn_parameters()
             query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 'private', login_count))
+            cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
             conn.commit()
             param_string = str(rfld_high) + ", " + str(rfld_low) + ", " + str(mile_radius)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 3, "hosp_address_info, hosp_general_info, nri_risk", param_string, login_count))
+            cursor.execute(query, (dsn_param['user'], 3, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count))
             conn.commit()
 
         except Exception as e:
@@ -320,11 +323,11 @@ class ApplicationQueries():
             cursor = conn.cursor()
             dsn_param = conn.get_dsn_parameters()
             query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 'private', login_count))
+            cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
             conn.commit()
             param_string = str(risk_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 4, "nri_risk, nri_demographics, nri_county", param_string, login_count))
+            cursor.execute(query, (dsn_param['user'], 4, "nri_risk, nri_demographics, nri_county", param_string, ApplicationQueries.login_count))
             conn.commit()
 
         except Exception as e:
@@ -376,11 +379,11 @@ class ApplicationQueries():
             cursor = conn.cursor()
             dsn_param = conn.get_dsn_parameters()
             query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 'private', login_count))
+            cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
             conn.commit()
             param_string = str(risk_thresh) + ", " + str(pop_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 5, "hospital_address_info, nri_risk, nri_demographics", param_string, login_count))
+            cursor.execute(query, (dsn_param['user'], 5, "hospital_address_info, nri_risk, nri_demographics", param_string, ApplicationQueries.login_count))
             conn.commit()
         except Exception as e:
             print("Error!")
