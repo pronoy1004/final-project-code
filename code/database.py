@@ -1,7 +1,7 @@
 import os
 from os import PRIO_PGRP, error, walk
 import psycopg2
-#import psycopg2.extras
+import psycopg2.extras
 import h5py
 from datetime import datetime
 import numpy as np
@@ -13,6 +13,9 @@ conn = psycopg2.connect(connection_string)
 
 
 class ApplicationQueries():
+
+    def __init__(self,connection_string):
+        self.conn = psycopg2.connect(connection_string)    
 
     ### get number of logins ###
     cursor = conn.cursor()
@@ -27,8 +30,7 @@ class ApplicationQueries():
         
     hdf5_path = "C:\\Users\\Elly Breves\\Desktop\\Elly\\RPI\\Courses\\ITWS-6250\\Final Project\\data\\gpm"
 
-    def __init__(connection_string):
-        conn = psycopg2.connect(connection_string)    
+  
 
     def read_hdf5(filename):
         f = h5py.File(filename, "r")
