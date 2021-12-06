@@ -1024,6 +1024,8 @@ def load_hospital(filename):
 load_hospital(hospital_filename)
 
 def create_user_log():
+        conn = psycopg2.connect("dbname=hospital user=hospital password=hospital")
+        cursor = conn.cursor()
 
         cursor.execute("""CREATE TABLE user_data(
                 user_name VARCHAR(50) PRIMARY KEY,
@@ -1045,4 +1047,4 @@ def create_user_log():
         
         conn.close()
 
-create_user_log
+create_user_log()
