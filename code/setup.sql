@@ -5,8 +5,3 @@ DROP USER IF EXISTS hospital;
 CREATE USER hospital WITH PASSWORD 'hospital';
 
 GRANT ALL PRIVILEGES ON DATABASE hospital TO hospital;
-
-DROP SCHEMA IF EXISTS testing CASCADE;
-CREATE SCHEMA testing;
-ALTER USER hospital SET search_path = testing;
-GRANT ALL PRIVILEGES ON SCHEMA testing TO hospital;
