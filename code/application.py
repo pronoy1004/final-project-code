@@ -22,22 +22,24 @@ def run_app(user_name):
     print("Enter x to Exit")
     
     inp = input()
+
+    _ = None
     if(inp == 'x'):
         return
     elif(inp == '1'):
-        ApplicationQueries.query1(user_name)
+        ApplicationQueries.query1(_,user_name)
 
     elif(inp == '2'):
-        ApplicationQueries.query2(user_name)
+        ApplicationQueries.query2(_,user_name)
 
     elif(inp == '3'):
-        ApplicationQueries.query3(user_name)
+        ApplicationQueries.query3(_,user_name)
 
     elif(inp == '4'):
-        ApplicationQueries.query4(user_name)
+        ApplicationQueries.query4(_,user_name)
 
     elif(inp == '5'):
-        ApplicationQueries.query5(user_name)
+        ApplicationQueries.query5(_,user_name)
 
     else:
         print("Incorrect choice, please select again! ")
