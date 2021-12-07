@@ -79,7 +79,6 @@ class ApplicationQueries():
         return log_count
     ###########################################
     
-
             
     #def login(self):
     def login(user_name):
@@ -165,7 +164,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (user_name, 1, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 1, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count()))
             conn.commit()
 
         except Exception as e:
@@ -243,7 +242,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (user_name, 2, "hosp_address_info, hosp_general_info, nri_risk, precip", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 2, "hosp_address_info, hosp_general_info, nri_risk, precip", param_string, ApplicationQueries.login_count()))
             conn.commit()
 
         except Exception as e:
@@ -303,7 +302,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(rfld_high) + ", " + str(rfld_low) + ", " + str(mile_radius)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (user_name, 3, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 3, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count()))
             conn.commit()
 
         except Exception as e:
@@ -350,7 +349,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(risk_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (user_name, 4, "nri_risk, nri_demographics, nri_county", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 4, "nri_risk, nri_demographics, nri_county", param_string, ApplicationQueries.login_count()))
             conn.commit()
 
         except Exception as e:
@@ -406,7 +405,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(risk_thresh) + ", " + str(pop_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (user_name, 5, "hospital_address_info, nri_risk, nri_demographics", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 5, "hospital_address_info, nri_risk, nri_demographics", param_string, ApplicationQueries.login_count()))
             conn.commit()
         except Exception as e:
             print("Error!")
