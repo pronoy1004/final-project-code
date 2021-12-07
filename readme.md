@@ -29,7 +29,7 @@ pip install tabulate
 
 ## Run
 
-1. Load hospital and NRI data into Postgres. Also creates user log tables. Precipitation data in HDF5 format will be loaded by the application. Change path to 'nri_filename' and 'hospital_filename' in lines 3 and 4 if necessary.
+1. Load hospital and NRI data into Postgres and create user log tables. Change path to 'nri_filename' and 'hospital_filename' in lines 3 and 4 if necessary. Precipitation data in HDF5 format will be loaded by the application. 
 ```
 python3 code/load_data.py
 ```
@@ -38,6 +38,6 @@ python3 code/load_data.py
 python3 code/application.py
 ```
 3. Register or login. If using for the first time, select '2' to register at the prompt. Enter a username. Then enter '1' to login with your username at the prompt.
-4. Select a query from the menu and enter the required parameters.
+4. Select a query from the menu and enter the required parameters at the prompt.
 5. Login is required for each new query.
-6. User logs can be viewed in Postgres.
+6. User logs (user_data and user_activity_log) can be viewed in Postgres.
