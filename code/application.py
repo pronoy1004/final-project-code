@@ -1,25 +1,28 @@
 import database
-from database import ApplicationQueries 
+from database import ApplicationQueries
+
 def run_app(user_name):
     inp = 'y'
 
+    print("\nWelcome to our Database Project, select the options to choose what you'd like to see.\n")
+    
+    print("Enter:\n")
+    
+    print("""1: Identify hospitals in counties with river flood or coastal flood risk index above a user-defined threshold.\n""")
+    
+    print("""2: Identify hospitals in counties with river flood or coastal flood risk index above a user-defined threshold
+    and show average monthly rainfall.\n""")
+    
+    print("""3: Identify hospitals in counties with river flood risk index above a user-defined
+    threshold. For each high-risk hospital, identify hospitals of the same type with river flood risk index below a user-defined
+    threshold within a user-defined mile radius.\n""")
+    
+    print("""4: List states in order of largest population living in counties with composite risk index above a user-defined threshold.\n""")
+    
+    print("""5: Display the number of hospitals per county in counties with composite risk index above a user-defined threshold
+    and with population above a user-defined threshold, ordered by descending population.\n""")
 
-    
-    print("Welcome to our Database Project, select the options to choose what you'd like to see :   ")
-    
-    print("Enter")
-    
-    print("1: ")
-    
-    print("2: ")
-    
-    print("3: ")
-    
-    print("4: ")
-    
-    print("5: ")
-    
-    print("Enter x to Exit")
+    print("""x: Exit.\n""")
     
     inp = input()
 
@@ -44,19 +47,17 @@ def run_app(user_name):
     else:
         print("Incorrect choice, please select again! ")
 
-    print("Thank you!")
-
 
 def set_up():
     log = 1 
     while(log == 1):
         
-        print("Hello User! Login/Register? : ")
+        print("Hello User! Login/Register?:\n")
 
         
-        print("1.Login: ")
+        print("1. Login:")
             
-        print("2.Register: ")
+        print("2. Register:\n")
         
 
 
@@ -64,7 +65,7 @@ def set_up():
 
         
         if(log == '1'):
-            user_name = input("Enter User Name : ")
+            user_name = input("\nEnter User Name : ")
             y = ApplicationQueries.login(user_name)
             if(y == 1):
                 run_app(user_name)
@@ -73,49 +74,17 @@ def set_up():
     return log
 
 if __name__ == "__main__":
-    #query = ApplicationQueries()
-
-    #### Login/Register ####
-
+    
     log = set_up()
 
     if(log == '2'):
-        user_name = input("Enter User Name : ")
+        user_name = input("\nEnter User Name : ")
         y = ApplicationQueries.register(user_name)
         if(y == 1):
             set_up()
         elif(y == 0):
             print("Error!")
     elif(log == '1'):
-        print("Thank You!")
+        print("\nThank You!")
     else:
         print("Incorrect choice, please select again! ")
-
-    # print("Hello User! Login/Register? : ")
-
-    
-    # print("1.Login: ")
-        
-    # print("2.Register: ")
-
-    # log=input()
-
-    
-    # if(log == '1'):
-    #     y = query.login()
-    #     if(y == 1):
-    #         run_app()
-    #     elif(y == 0):
-    #         print("Incorrect User Name")
-
-    # elif(log == '2'):
-    #     query.register()
-    #     if(y == 1):
-    #         ()
-    #     elif(y == 0):
-    #         print("Error!")
-
-    # else:
-    #     print("Incorrect choice, please select again! ")
-
-
