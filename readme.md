@@ -29,7 +29,7 @@ pip install tabulate
 
 ## Run
 
-1. Load hospital and NRI data into Postgres and create user log tables. Change path to 'nri_filename' and 'hospital_filename' in lines 3 and 4 if necessary. Precipitation data in HDF5 format will be loaded by the application. 
+1. Load hospital and NRI data into Postgres and create user log tables. Change path to 'nri_filename' and 'hospital_filename' in lines 3 and 4 if necessary. Precipitation data in HDF5 format will be loaded by the application. Change 'hdf5_path' in line 12 of database.py if necessary.
 ```
 python3 code/load_data.py
 ```
