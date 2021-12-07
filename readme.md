@@ -25,6 +25,7 @@ pip install datetime
 pip install numpy
 pip install tabulate
 ```
+3. The code looks for NRI and hospital .csv files in the data directory. HDF5 files from the precipitation dataset should be located in data/gpm. Only HDF5 files should exist in that folder.
 
 ## Run
 
