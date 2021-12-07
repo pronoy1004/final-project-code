@@ -1,5 +1,5 @@
 import database
-def run_app():
+def run_app(user_name):
     inp = 'y'
 
 
@@ -24,19 +24,19 @@ def run_app():
     if(inp == 'x'):
         return
     elif(inp == '1'):
-        query.query1()
+        query.query1(user_name)
 
     elif(inp == '2'):
-        query.query2()
+        query.query2(user_name)
 
     elif(inp == '3'):
-        query.query3()
+        query.query3(user_name)
 
     elif(inp == '4'):
-        query.query4()
+        query.query4(user_name)
 
     elif(inp == '5'):
-        query.query5()
+        query.query5(user_name)
 
     else:
         print("Incorrect choice, please select again! ")
@@ -54,14 +54,17 @@ def set_up():
         print("1.Login: ")
             
         print("2.Register: ")
+        
+
 
         log=input()
 
         
         if(log == '1'):
-            y = query.login()
+            user_name = input("Enter User Name : ")
+            y = query.login(user_name)
             if(y == 1):
-                run_app()
+                run_app(user_name)
             elif(y == 0):
                 print("Incorrect User Name")
     return log
@@ -74,7 +77,8 @@ if __name__ == "__main__":
     log = set_up()
 
     if(log == '2'):
-        y = query.register()
+        user_name = input("Enter User Name : ")
+        y = query.register(user_name)
         if(y == 1):
             set_up()
         elif(y == 0):

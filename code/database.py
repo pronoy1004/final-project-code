@@ -54,15 +54,18 @@ def build_hdf5_index(hdf5_path):
 
 file_list = build_hdf5_index(hdf5_path)
 
+
 class ApplicationQueries():
 
-    def __init__(self):
+    def __init__(self, user_name):
         self.conn = psycopg2.connect(user = "hospital",
                                 password = "hospital",
                                 host = "127.0.0.1",
                                 port = "5432",
                                 database = "hospital")
+        self.user_name = user_name
 
+    
     ########## new function #################
     def login_count(user_name):
         cursor = conn.cursor()
@@ -75,18 +78,19 @@ class ApplicationQueries():
             log_count = records[0][1] + 1
         return log_count
     ###########################################
+    
 
             
     #def login(self):
-    def login():
+    def login(user_name):
         try:
-            user_name = input("Enter User Name : ")
+            # user_name = input("Enter User Name : ")
             cursor = conn.cursor()
             query = ("""Select user_name from user_data""")
             cursor.execute(query)
             records = cursor.fetchall()
             if user_name in [i[0] for i in records]:
-                log_count = login_count(user_name) #added
+                log_count = ApplicationQueries.login_count(user_name) #added
                 query = ("""UPDATE user_data SET login_count = %s WHERE user_name = %s;""") #added
                 cursor.execute(query, (log_count,user_name)) #edited
                 conn.commit() #added
@@ -99,11 +103,9 @@ class ApplicationQueries():
             print(str(e))
             return 0
 
-
     #def register(self):
-    def register():
+    def register(user_name):
         try:         
-            user_name = input("Enter User Name : ")
             cursor = conn.cursor()
             query = ("""Select user_name from user_data""")
             cursor.execute(query)
@@ -113,7 +115,7 @@ class ApplicationQueries():
                 return 0
             else:
                 #cursor = conn.cursor()
-                log_count = login_count(user_name) #added
+                log_count = ApplicationQueries.login_count(user_name) #added
                 query = ("""INSERT INTO user_data(user_name,login_count) VALUES (%s,%s);""")
                 cursor.execute(query, (user_name,log_count)) #edited
                 conn.commit()
@@ -126,7 +128,7 @@ class ApplicationQueries():
     # Query 1: Identify hospitals in counties with river flooding or coastal flooding risk index
     # above a user-defined threshold
 
-    def query1(self):
+    def query1(self, user_name):
         try:
             rfld_thresh = float(input("Enter the River flooding risk Threshold : "))
             cfld_thresh = float(input("Enter the Coastal flooding risk Threshold : "))
@@ -143,7 +145,7 @@ class ApplicationQueries():
             headers = ['ID', 'Name', 'River Flood Score', 'River Flood Rating', 'Coastal Flood Score', 'Coastal Flood Rating']
             table = [[records[i][0], records[i][1], round(float(records[i][2]),2), records[i][3], round(float(records[i][4]),2), records[i][5]] for i in range(0, len(records))]
             print(tabulate(table, headers))
-            ApplicationQueries.query_1_insert(rfld_thresh, cfld_thresh)
+            ApplicationQueries.query_1_insert(rfld_thresh, cfld_thresh,user_name)
             return records
 
 
@@ -152,7 +154,7 @@ class ApplicationQueries():
             print(str(e))
             return
         
-    def query_1_insert(rfld_thresh, cfld_thresh):
+    def query_1_insert(rfld_thresh, cfld_thresh,user_name):
 
         try:
 
@@ -163,7 +165,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 1, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 1, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count))
             conn.commit()
 
         except Exception as e:
@@ -174,7 +176,7 @@ class ApplicationQueries():
     # Query 2: Identify hospitals in counties with river flooding or coastal flooding risk index
     # above a user-defined threshold and list average monthly rainfall.
 
-    def query2(self):
+    def query2(self,user_name):
         try:
             rfld_thresh = float(input("Enter the River flooding risk Threshold : "))
             cfld_thresh = float(input("Enter the Coastal flooding risk Threshold : "))
@@ -222,7 +224,7 @@ class ApplicationQueries():
                   round(float(records_list[i][8][7]),2), round(float(records_list[i][8][8]),2), round(float(records_list[i][8][9]),2),
                   round(float(records_list[i][8][10]),2), round(float(records_list[i][8][11]),2)] for i in range(0, len(records_list))]
             print(tabulate(table, headers))
-            ApplicationQueries.query_2_insert(rfld_thresh,cfld_thresh)
+            ApplicationQueries.query_2_insert(rfld_thresh,cfld_thresh,user_name)
             return records_list   
 
         except Exception as e:
@@ -230,7 +232,7 @@ class ApplicationQueries():
             print(str(e))
             return
         
-    def query_2_insert(rfld_thresh, cfld_thresh):
+    def query_2_insert(rfld_thresh, cfld_thresh,user_name):
 
         try:
 
@@ -241,7 +243,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 2, "hosp_address_info, hosp_general_info, nri_risk, precip", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 2, "hosp_address_info, hosp_general_info, nri_risk, precip", param_string, ApplicationQueries.login_count))
             conn.commit()
 
         except Exception as e:
@@ -254,7 +256,7 @@ class ApplicationQueries():
     # river flooding risk index below a user-defined threshold and within a user-defined mile radius.
 
 
-    def query3(self):
+    def query3(self,user_name):
 
         try:
             rfld_high = float(input("Enter the upper limit : "))
@@ -283,7 +285,7 @@ class ApplicationQueries():
             headers = ['ID', 'ID', 'NAICS Description', 'State', 'River Flood Score', 'River Flood Score']
             table = [[records[i][0], records[i][1], records[i][2], records[i][3], round(float(records[i][4]),2), round(float(records[i][5]),2)] for i in range(0, len(records))]
             print(tabulate(table, headers))
-            ApplicationQueries.query_3_insert(rfld_high,rfld_low,mile_radius)
+            ApplicationQueries.query_3_insert(rfld_high,rfld_low,mile_radius,user_name)
             return records  
 
         except Exception as e:
@@ -291,7 +293,7 @@ class ApplicationQueries():
             print(str(e))
             return
         
-    def query_3_insert(rfld_high, rfld_low, mile_radius):
+    def query_3_insert(rfld_high, rfld_low, mile_radius,user_name):
         try:
 
             cursor = conn.cursor()
@@ -301,7 +303,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(rfld_high) + ", " + str(rfld_low) + ", " + str(mile_radius)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 3, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 3, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count))
             conn.commit()
 
         except Exception as e:
@@ -311,7 +313,7 @@ class ApplicationQueries():
     # Query 4: List states in order of largest population living in counties with total risk above
     # a user-defined threshold.
 
-    def query4(self):
+    def query4(self,user_name):
 
         try:
             risk_thresh = float(input("Enter the risk threshold : "))
@@ -329,7 +331,7 @@ class ApplicationQueries():
             headers = ['State', 'At-risk Population']
             table = [[records[i][0], records[i][1]] for i in range(0, len(records))]
             print(tabulate(table, headers))
-            ApplicationQueries.query_4_insert(risk_thresh)
+            ApplicationQueries.query_4_insert(risk_thresh,user_name)
             return records 
 
         except Exception as e:
@@ -337,7 +339,7 @@ class ApplicationQueries():
             print(str(e))
             return
         
-    def query_4_insert(risk_thresh):
+    def query_4_insert(risk_thresh,user_name):
         
         try:
 
@@ -348,7 +350,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(risk_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 4, "nri_risk, nri_demographics, nri_county", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 4, "nri_risk, nri_demographics, nri_county", param_string, ApplicationQueries.login_count))
             conn.commit()
 
         except Exception as e:
@@ -359,7 +361,7 @@ class ApplicationQueries():
     # Query 5: Display the number of hospitals per county in counties with risk of any natural disaster above a
     # user-defined threshold and with population above a user-defined threshold, ordered by descending population.
 
-    def query5(self):
+    def query5(self,user_name):
 
         
         try:
@@ -385,7 +387,7 @@ class ApplicationQueries():
             headers = ['County FIPS', 'Population', 'Total Risk', 'Number of Hospitals']
             table = [[records[i][0], records[i][1], round(float(records[i][2]),2), records[i][3]] for i in range(0, len(records))]
             print(tabulate(table, headers))
-            ApplicationQueries.query_5_insert(risk_thresh,pop_thresh)
+            ApplicationQueries.query_5_insert(risk_thresh,pop_thresh,user_name)
             return records
 
         except Exception as e:
@@ -393,7 +395,7 @@ class ApplicationQueries():
             print(str(e))
             return
 
-    def query_5_insert(risk_thresh, pop_thresh):
+    def query_5_insert(risk_thresh, pop_thresh,user_name):
         
         try:
 
@@ -404,7 +406,7 @@ class ApplicationQueries():
             #conn.commit()
             param_string = str(risk_thresh) + ", " + str(pop_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
-            cursor.execute(query, (dsn_param['user'], 5, "hospital_address_info, nri_risk, nri_demographics", param_string, ApplicationQueries.login_count))
+            cursor.execute(query, (user_name, 5, "hospital_address_info, nri_risk, nri_demographics", param_string, ApplicationQueries.login_count))
             conn.commit()
         except Exception as e:
             print("Error!")
