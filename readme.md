@@ -39,3 +39,4 @@ python3 code/application.py
 3. Register or login. If using for the first time, select '2' to register at the prompt. Enter a username. Then enter '1' to login with your username at the prompt.
 4. Select a query from the menu and enter the required parameters.
 5. Login is required for each new query.
+6. User logs can be viewed in Postgres.
