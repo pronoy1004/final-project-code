@@ -75,10 +75,23 @@ class ApplicationQueries():
         if len(records) == 0:
             log_count = 1
         elif len(records) == 1:
+            log_count = records[0][1]
+        return log_count
+        
+    def count(user_name):
+        cursor = conn.cursor()
+        query = ("""SELECT * FROM user_data WHERE user_name = %s""")
+        cursor.execute(query, (user_name,))
+        records = cursor.fetchall()
+        if len(records) == 0:
+            log_count = 1
+        elif len(records) == 1:
             log_count = records[0][1] + 1
         return log_count
+
+
+
     ###########################################
-    
             
     #def login(self):
     def login(user_name):
@@ -89,10 +102,10 @@ class ApplicationQueries():
             cursor.execute(query)
             records = cursor.fetchall()
             if user_name in [i[0] for i in records]:
-                # log_count = ApplicationQueries.login_count(user_name) #added
-                # query = ("""UPDATE user_data SET login_count = %s WHERE user_name = %s;""") #added
-                # cursor.execute(query, (log_count,user_name)) #edited
-                # conn.commit() #added
+                log_count = ApplicationQueries.count(user_name) #added
+                query = ("""UPDATE user_data SET login_count = %s WHERE user_name = %s;""") #added
+                cursor.execute(query, (log_count,user_name)) #edited
+                conn.commit() #added
                 return 1
             else:
                 print("User name does not exist!")
