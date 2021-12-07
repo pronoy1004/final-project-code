@@ -89,10 +89,10 @@ class ApplicationQueries():
             cursor.execute(query)
             records = cursor.fetchall()
             if user_name in [i[0] for i in records]:
-                log_count = ApplicationQueries.login_count(user_name) #added
-                query = ("""UPDATE user_data SET login_count = %s WHERE user_name = %s;""") #added
-                cursor.execute(query, (log_count,user_name)) #edited
-                conn.commit() #added
+                # log_count = ApplicationQueries.login_count(user_name) #added
+                # query = ("""UPDATE user_data SET login_count = %s WHERE user_name = %s;""") #added
+                # cursor.execute(query, (log_count,user_name)) #edited
+                # conn.commit() #added
                 return 1
             else:
                 print("User name does not exist!")
@@ -114,9 +114,9 @@ class ApplicationQueries():
                 return 0
             else:
                 #cursor = conn.cursor()
-                log_count = ApplicationQueries.login_count(user_name) #added
+                #log_count = ApplicationQueries.login_count(user_name) #added
                 query = ("""INSERT INTO user_data(user_name,login_count) VALUES (%s,%s);""")
-                cursor.execute(query, (user_name,log_count)) #edited
+                cursor.execute(query, (user_name,0)) #edited
                 conn.commit()
                 return 1
         except Exception as e:

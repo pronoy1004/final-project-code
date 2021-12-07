@@ -86,6 +86,8 @@ if __name__ == "__main__":
             set_up()
         elif(y == 0):
             print("Error!")
+    elif(log == '1'):
+        print("Thank You!")
     else:
         print("Incorrect choice, please select again! ")
 
