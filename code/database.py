@@ -196,15 +196,15 @@ class ApplicationQueries():
                 monthly_precip = {}
                 latitude = float(records[k][6])
                 longitude = float(records[k][7])
-                for i in range(len(ApplicationQueries.file_list)):
-                    lat_idx = np.searchsorted(ApplicationQueries.file_list[i]['lat'], latitude, side="left")
-                    lon_idx = np.searchsorted(ApplicationQueries.file_list[i]['lon'], longitude, side="left")
-                    f = h5py.File(ApplicationQueries.hdf5_path + "\\" + ApplicationQueries.file_list[i]['filename'], "r")
+                for i in range(len(file_list)):
+                    lat_idx = np.searchsorted(file_list[i]['lat'], latitude, side="left")
+                    lon_idx = np.searchsorted(file_list[i]['lon'], longitude, side="left")
+                    f = h5py.File(hdf5_path + "\\" + file_list[i]['filename'], "r")
                     precip = f['Grid']['precipitation'][(0,lon_idx,lat_idx)] # 3600 x 1800 array
                     f.close()
-                    if ApplicationQueries.file_list[i]['year'] not in monthly_precip:
-                        monthly_precip[ApplicationQueries.file_list[i]['year']] = {}
-                    monthly_precip[ApplicationQueries.file_list[i]['year']][ApplicationQueries.file_list[i]['month']] = precip
+                    if file_list[i]['year'] not in monthly_precip:
+                        monthly_precip[file_list[i]['year']] = {}
+                    monthly_precip[file_list[i]['year']][file_list[i]['month']] = precip
                 monthly_avg = []
                 for i in range(12):
                     monthly_data = []
