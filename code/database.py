@@ -1,29 +1,17 @@
 import os
 from os import walk
 import psycopg2
-#import psycopg2.extras
 import h5py
 from datetime import datetime
 import numpy as np
 from tabulate import tabulate
 
-connection_string = "dbname='hospital' user='hospital' password='hospital'"
+connection_string = "host='localhost' dbname='hospital' user='hospital' password='hospital'"
 conn = psycopg2.connect(connection_string)
-
-### get number of logins ###
-##cursor = conn.cursor()
-###dsn_param = conn.get_dsn_parameters()
-##query = ("""SELECT * FROM user_data WHERE user_name = %s""")
-###cursor.execute(query, (dsn_param['user'],))
-##cursor.execute(query, (user_name,))
-##records = cursor.fetchall()
-##if len(records) == 0:
-##    login_count = 1
-##elif len(records) == 1:
-##    login_count = records[0][2] + 1
     
-hdf5_path = "C:\\Users\\Elly Breves\\Desktop\\Elly\\RPI\\Courses\\ITWS-6250\\Final Project\\data\\gpm"
+hdf5_path = "data/gpm" # individual HDF5 precipitation files need to be in data/gpm folder. No other files can be in the folder.
 
+# extracts year, month, latitude, longitude from a single HDF5 precipitation file.
 def read_hdf5(filename):
     f = h5py.File(filename, "r")
     timestamp = datetime.utcfromtimestamp(f['Grid']['time'][(0)])
@@ -31,18 +19,15 @@ def read_hdf5(filename):
     month = timestamp.month
     lat = f['Grid']['lat'][()] # 1800 x 1 array
     lon = f['Grid']['lon'][()] # 3600 x 1 array
-    #precip = f['Grid']['precipitation'][(0,...)] # 3600 x 1800 array
     f.close()
-    #return year, month, lat, lon, precip
     return year, month, lat, lon
 
-### builds a dictionary with hdf5 filenames, year, month, lat, lon
+# builds a list of HDF5 filenames with year, month, latitude, and longitude
+# not used in this version of the application, but would aid in selecting precipitation data by date
 def build_hdf5_index(hdf5_path):
     file_list = {}
     (_, _, hdf5_filenames) = next(walk(hdf5_path))
     for i in range(len(hdf5_filenames)):
-        print("Working on file " + str(i+1) + " of " + str(len(hdf5_filenames)) + " ...")
-        #[year, month, lat_array, lon_array, _] = read_hdf5(hdf5_path + "\\" + hdf5_filenames[i])
         [year, month, lat_array, lon_array] = read_hdf5(hdf5_path + "\\" + hdf5_filenames[i])
         file_list[i]={}
         file_list[i]['filename'] = hdf5_filenames[i]
@@ -65,8 +50,7 @@ class ApplicationQueries():
                                 database = "hospital")
         self.user_name = user_name
 
-    
-    ########## new function #################
+    # retrieves number of logins for current user from Postgres
     def login_count(user_name):
         cursor = conn.cursor()
         query = ("""SELECT * FROM user_data WHERE user_name = %s""")
@@ -77,7 +61,8 @@ class ApplicationQueries():
         elif len(records) == 1:
             log_count = records[0][1]
         return log_count
-        
+
+    # retrieves number of logins for current user from Postgres and increments by one
     def count(user_name):
         cursor = conn.cursor()
         query = ("""SELECT * FROM user_data WHERE user_name = %s""")
@@ -89,23 +74,18 @@ class ApplicationQueries():
             log_count = records[0][1] + 1
         return log_count
 
-
-
-    ###########################################
-            
-    #def login(self):
+    # if current user is existing user, increment login count in user_data by 1
     def login(user_name):
         try:
-            # user_name = input("Enter User Name : ")
             cursor = conn.cursor()
             query = ("""Select user_name from user_data""")
             cursor.execute(query)
             records = cursor.fetchall()
             if user_name in [i[0] for i in records]:
-                log_count = ApplicationQueries.count(user_name) #added
-                query = ("""UPDATE user_data SET login_count = %s WHERE user_name = %s;""") #added
-                cursor.execute(query, (log_count,user_name)) #edited
-                conn.commit() #added
+                log_count = ApplicationQueries.count(user_name)
+                query = ("""UPDATE user_data SET login_count = %s WHERE user_name = %s;""")
+                cursor.execute(query, (log_count,user_name))
+                conn.commit()
                 return 1
             else:
                 print("User name does not exist!")
@@ -115,7 +95,7 @@ class ApplicationQueries():
             print(str(e))
             return 0
 
-    #def register(self):
+    # add new user to user_data in Postgres
     def register(user_name):
         try:         
             cursor = conn.cursor()
@@ -126,10 +106,8 @@ class ApplicationQueries():
                 print("User Name Already Exists")
                 return 0
             else:
-                #cursor = conn.cursor()
-                #log_count = ApplicationQueries.login_count(user_name) #added
                 query = ("""INSERT INTO user_data(user_name,login_count) VALUES (%s,%s);""")
-                cursor.execute(query, (user_name,0)) #edited
+                cursor.execute(query, (user_name,0))
                 conn.commit()
                 return 1
         except Exception as e:
@@ -142,8 +120,8 @@ class ApplicationQueries():
 
     def query1(self, user_name):
         try:
-            rfld_thresh = float(input("Enter the River flooding risk Threshold : "))
-            cfld_thresh = float(input("Enter the Coastal flooding risk Threshold : "))
+            rfld_thresh = float(input("Enter the river flooding risk threshold (0 - 100): "))
+            cfld_thresh = float(input("Enter the coastal flooding risk threshold (0 - 100): "))
 
         except ValueError:
             print("Incorrect Input!")
@@ -154,8 +132,8 @@ class ApplicationQueries():
             = hosp_general_info.id JOIN nri_risk ON countyfips = stcofips WHERE rfldrisks >= %s OR cfldrisks >= %s""")
             cursor.execute(query, (rfld_thresh, cfld_thresh))
             records = cursor.fetchall()
-            headers = ['ID', 'Name', 'River Flood Score', 'River Flood Rating', 'Coastal Flood Score', 'Coastal Flood Rating']
-            table = [[records[i][0], records[i][1], round(float(records[i][2]),2), records[i][3], round(float(records[i][4]),2), records[i][5]] for i in range(0, len(records))]
+            headers = ['ID', 'Name', 'River NRI', 'River Rating', 'Coastal NRI', 'Coastal Rating']
+            table = [[records[i][0], records[i][1], round(float(records[i][2]),0), records[i][3], round(float(records[i][4]),0), records[i][5]] for i in range(0, len(records))]
             print(tabulate(table, headers))
             ApplicationQueries.query_1_insert(rfld_thresh, cfld_thresh,user_name)
             return records
@@ -165,16 +143,13 @@ class ApplicationQueries():
             print("Error : ")
             print(str(e))
             return
-        
+
+    # inserts query number and user-entered parameters into user_activity_log    
     def query_1_insert(rfld_thresh, cfld_thresh,user_name):
 
         try:
 
             cursor = conn.cursor()
-            #dsn_param = conn.get_dsn_parameters()
-            #query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            #cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
-            #conn.commit()
             param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
             cursor.execute(query, (user_name, 1, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count(user_name)))
@@ -190,25 +165,27 @@ class ApplicationQueries():
 
     def query2(self,user_name):
         try:
-            rfld_thresh = float(input("Enter the River flooding risk Threshold : "))
-            cfld_thresh = float(input("Enter the Coastal flooding risk Threshold : "))
+            rfld_thresh = float(input("Enter the river flooding risk threshold (0 - 100): "))
+            cfld_thresh = float(input("Enter the coastal flooding risk threshold (0 - 100): "))
 
         except ValueError:
             print("Incorrect Input!")
 
         try:
             cursor = conn.cursor()
-            query = ("""SELECT hosp_address_info.id, name, rfldrisks, rfldriskr, cfldrisks, cfldriskr, ROUND(latitude, 1), ROUND(longitude, 1) FROM hosp_address_info JOIN hosp_general_info ON hosp_address_info.id
+            query = ("""SELECT hosp_address_info.id, rfldrisks, cfldrisks, latitude, longitude FROM hosp_address_info JOIN hosp_general_info ON hosp_address_info.id
             = hosp_general_info.id JOIN nri_risk ON countyfips = stcofips WHERE rfldrisks >= %s OR cfldrisks >= %s""")
             cursor.execute(query, (rfld_thresh, cfld_thresh))
             records = cursor.fetchall()
             records_list = []
+            # gets average monthly prepitation for each hospital from HDF5 files
             for k in range(len(records)):
                 print("Working on record " + str(k+1) + " of " + str(len(records)) + " ...")
                 monthly_precip = {}
-                latitude = float(records[k][6])
-                longitude = float(records[k][7])
+                latitude = float(records[k][3])
+                longitude = float(records[k][4])
                 for i in range(len(file_list)):
+                    # finds nearest precipitation measurement to hospital location
                     lat_idx = np.searchsorted(file_list[i]['lat'], latitude, side="left")
                     lon_idx = np.searchsorted(file_list[i]['lon'], longitude, side="left")
                     f = h5py.File(hdf5_path + "\\" + file_list[i]['filename'], "r")
@@ -218,6 +195,7 @@ class ApplicationQueries():
                         monthly_precip[file_list[i]['year']] = {}
                     monthly_precip[file_list[i]['year']][file_list[i]['month']] = precip
                 monthly_avg = []
+                # calculates average monthly precipitation
                 for i in range(12):
                     monthly_data = []
                     for j in range(len(monthly_precip.keys())):
@@ -226,15 +204,14 @@ class ApplicationQueries():
                 new_row = list(records[k])
                 new_row.append(monthly_avg)
                 records_list.append(new_row)
-            headers = ['ID', 'Name', 'River Flood Score', 'River Flood Rating', 'Coastal Flood Score', 'Coastal Flood Rating', 'Latitude', 'Longitude', 'Precip Jan',
-                   'Precip Feb', 'Precip Mar', 'Precip Apr', 'Precip May', 'Precip Jun', 'Precip Jul', 'Precip Aug', 'Precip Sep', 'Precip Oct', 'Precip Nov',
-                   'Precip Dec']
-            table = [[records_list[i][0], records_list[i][1], round(float(records_list[i][2]),2), records_list[i][3], round(float(records_list[i][4]),2),
-                  records_list[i][5], round(float(records_list[i][6]),2), round(float(records_list[i][7]),2), round(float(records_list[i][8][0]),2),
-                  round(float(records_list[i][8][1]),2), round(float(records_list[i][8][2]),2), round(float(records_list[i][8][3]),2),
-                  round(float(records_list[i][8][4]),2), round(float(records_list[i][8][5]),2), round(float(records_list[i][8][6]),2),
-                  round(float(records_list[i][8][7]),2), round(float(records_list[i][8][8]),2), round(float(records_list[i][8][9]),2),
-                  round(float(records_list[i][8][10]),2), round(float(records_list[i][8][11]),2)] for i in range(0, len(records_list))]
+            headers = ['ID', 'River Flood NRI', 'Coastal Flood NRI', 'Lat', 'Lon', 'Jan', 'Feb', 'Mar', 'Apr',
+                       'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            table = [[records_list[i][0], round(float(records_list[i][1]),0), round(float(records_list[i][2]),0), round(float(records_list[i][3]),2),
+                  round(float(records_list[i][4]),2), round(float(records_list[i][5][0]),2), round(float(records_list[i][5][1]),2),
+                  round(float(records_list[i][5][2]),2), round(float(records_list[i][5][3]),2), round(float(records_list[i][5][4]),2),
+                  round(float(records_list[i][5][5]),2), round(float(records_list[i][5][6]),2), round(float(records_list[i][5][7]),2),
+                  round(float(records_list[i][5][8]),2), round(float(records_list[i][5][9]),2), round(float(records_list[i][5][10]),2),
+                  round(float(records_list[i][5][11]),2)] for i in range(0, len(records_list))]
             print(tabulate(table, headers))
             ApplicationQueries.query_2_insert(rfld_thresh,cfld_thresh,user_name)
             return records_list   
@@ -243,16 +220,13 @@ class ApplicationQueries():
             print("Error : ")
             print(str(e))
             return
-        
+
+    # inserts query number and user-entered parameters into user_activity_log      
     def query_2_insert(rfld_thresh, cfld_thresh,user_name):
 
         try:
 
             cursor = conn.cursor()
-            #dsn_param = conn.get_dsn_parameters()
-            #query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            #cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
-            #conn.commit()
             param_string = str(rfld_thresh) + ", " + str(cfld_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
             cursor.execute(query, (user_name, 2, "hosp_address_info, hosp_general_info, nri_risk, precip", param_string, ApplicationQueries.login_count(user_name)))
@@ -271,15 +245,16 @@ class ApplicationQueries():
     def query3(self,user_name):
 
         try:
-            rfld_high = float(input("Enter the upper limit : "))
-            rfld_low = float(input("Enter the lower limit : "))
-            mile_radius = float(input("Enter the Radius in which you want to search : "))
+            rfld_high = float(input("Enter the upper risk threshold (0 - 100): "))
+            rfld_low = float(input("Enter the lower risk threshold (0 - 100): "))
+            mile_radius = float(input("Enter the mile radius in which you want to search: "))
 
 
         except ValueError:
             print("Incorrect Input!")
 
         try:
+            # converts mile_radius into degrees latitude and longitude
             lat_range = mile_radius/69
             lon_range = mile_radius/53 #at 40 degrees latitude
             cursor = conn.cursor()
@@ -287,32 +262,32 @@ class ApplicationQueries():
             JOIN hosp_address_info ON hosp_general_info.id = hosp_address_info.id JOIN nri_risk ON countyfips = stcofips;""")
             cursor.execute(query)
             conn.commit()
-            query = ("""SELECT c1.id, c2.id, c1.NAICS_DESC, c1.state, c1.rfldrisks, c2.rfldrisks
+            query = ("""SELECT c1.state, c1.NAICS_DESC, c1.id, c1.rfldrisks, c2.id, c2.rfldrisks
                     FROM hosp_combined c1, hosp_combined c2
                     WHERE c1.NAICS_DESC = c2.NAICS_DESC AND c1.state = c2.state AND c1.id <> c2.id AND c1.rfldrisks >= %s AND c2.rfldrisks <= %s
                     AND ABS(c1.latitude - c2.latitude) <= %s AND ABS(c1.longitude - c2.longitude) <= %s
                     ORDER BY c1.rfldrisks DESC, c1.id, c2.rfldrisks;""")
             cursor.execute(query, (rfld_high, rfld_low, lat_range, lon_range))
             records = cursor.fetchall()
-            headers = ['ID', 'ID', 'NAICS Description', 'State', 'River Flood Score', 'River Flood Score']
-            table = [[records[i][0], records[i][1], records[i][2], records[i][3], round(float(records[i][4]),2), round(float(records[i][5]),2)] for i in range(0, len(records))]
+            headers = ['State', 'NAICS Description', 'High-risk ID', 'High-risk NRI', 'Low-risk ID', 'Low-risk NRI']
+            table = [[records[i][0], records[i][1], records[i][2], round(float(records[i][3]),0), records[i][4], round(float(records[i][5]),0)] for i in range(0, len(records))]
             print(tabulate(table, headers))
             ApplicationQueries.query_3_insert(rfld_high,rfld_low,mile_radius,user_name)
+            query = ("""DROP VIEW IF EXISTS hosp_combined""")
+            cursor.execute(query)
+            conn.commit()
             return records  
 
         except Exception as e:
             print("Error : ")
             print(str(e))
             return
-        
+
+    # inserts query number and user-entered parameters into user_activity_log    
     def query_3_insert(rfld_high, rfld_low, mile_radius,user_name):
         try:
 
             cursor = conn.cursor()
-            #dsn_param = conn.get_dsn_parameters()
-            #query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            #cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
-            #conn.commit()
             param_string = str(rfld_high) + ", " + str(rfld_low) + ", " + str(mile_radius)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
             cursor.execute(query, (user_name, 3, "hosp_address_info, hosp_general_info, nri_risk", param_string, ApplicationQueries.login_count(user_name)))
@@ -328,7 +303,7 @@ class ApplicationQueries():
     def query4(self,user_name):
 
         try:
-            risk_thresh = float(input("Enter the risk threshold : "))
+            risk_thresh = float(input("Enter the composite risk threshold (0 - 100): "))
         except ValueError:
             print("Incorrect Input!")
         try:
@@ -350,16 +325,13 @@ class ApplicationQueries():
             print("Error : ")
             print(str(e))
             return
-        
+
+    # inserts query number and user-entered parameters into user_activity_log    
     def query_4_insert(risk_thresh,user_name):
         
         try:
 
             cursor = conn.cursor()
-            #dsn_param = conn.get_dsn_parameters()
-            #query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            #cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
-            #conn.commit()
             param_string = str(risk_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
             cursor.execute(query, (user_name, 4, "nri_risk, nri_demographics, nri_county", param_string, ApplicationQueries.login_count(user_name)))
@@ -377,8 +349,8 @@ class ApplicationQueries():
 
         
         try:
-            risk_thresh = float(input("Enter the risk threshold : "))
-            pop_thresh = float(input("Enter the population threshold : "))
+            risk_thresh = float(input("Enter the composite risk threshold (0 - 100): "))
+            pop_thresh = float(input("Enter the population threshold: "))
         except ValueError:
             print("Incorrect Input!")
 
@@ -397,7 +369,7 @@ class ApplicationQueries():
             cursor.execute(query, (risk_thresh, pop_thresh))
             records = cursor.fetchall()
             headers = ['County FIPS', 'Population', 'Total Risk', 'Number of Hospitals']
-            table = [[records[i][0], records[i][1], round(float(records[i][2]),2), records[i][3]] for i in range(0, len(records))]
+            table = [[records[i][0], records[i][1], round(float(records[i][2]),0), records[i][3]] for i in range(0, len(records))]
             print(tabulate(table, headers))
             ApplicationQueries.query_5_insert(risk_thresh,pop_thresh,user_name)
             return records
@@ -407,15 +379,12 @@ class ApplicationQueries():
             print(str(e))
             return
 
+    # inserts query number and user-entered parameters into user_activity_log
     def query_5_insert(risk_thresh, pop_thresh,user_name):
         
         try:
 
             cursor = conn.cursor()
-            #dsn_param = conn.get_dsn_parameters()
-            #query = ("""INSERT INTO user_data(user_name, password, login_count) VALUES (%s, %s, %s)""")
-            #cursor.execute(query, (dsn_param['user'], 'private', ApplicationQueries.login_count))
-            #conn.commit()
             param_string = str(risk_thresh) + ", " + str(pop_thresh)
             query = ("""INSERT INTO user_activity_log(user_name, query_run, tables_accessed, input_params, login_count) VALUES (%s, %s, %s, %s, %s)""")
             cursor.execute(query, (user_name, 5, "hospital_address_info, nri_risk, nri_demographics", param_string, ApplicationQueries.login_count(user_name)))
